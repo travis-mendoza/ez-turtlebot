@@ -31,7 +31,8 @@ Using your remote pc:
 * Connect the OpenCR board to the pc via USB to micro USB.
 * Install the Arduino IDE and add the OpenCR board to the boards manager following the [Robotis E-Manual](https://emanual.robotis.com/docs/en/parts/controller/opencr10/#install-on-linux).
 * Open the IDE's Library Manager and install the Dynamixel2Arduino library.
-* Clone this [OpenCR repo fork](https://github.com/travis-mendoza/OpenCR)
+* Clone the analog-enabled OpenCR repo fork
+  * `git clone https://github.com/travis-mendoza/OpenCR.git`
 * Open [turtlebot3_burger.ino](https://github.com/travis-mendoza/OpenCR/blob/master/arduino/opencr_arduino/opencr/libraries/turtlebot3_ros2/examples/turtlebot3_burger/turtlebot3_burger.ino) in the Arduino IDE.
 * Select the OpenCR board and USB port from the board manager drop down menu.
 * Upload the file to the OpenCR board.
