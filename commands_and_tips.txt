@@ -1,0 +1,74 @@
+------------ ROS 2 Operation -------------
+# Initialize turtlebot hardware
+# This must happen before doing any other turtlebot operations
+ros2 launch turtlebot3_bringup robot.launch.py
+
+# Open a Gazebo sim world
+ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
+
+# Start navigation2
+# Requires ~/map.yaml
+ros2 launch turtlebot3_navigation2 navigation2.launch.py map:=path/to/map.yaml params_file:=$HOME/ez-turtlebot/nav2_params.yaml
+ros2 launch turtlebot3_navigation2 navigation2.launch.py use_sim_time:=True map:=$HOME/maps/turtle_world.yaml params_file:=$HOME/ez-turtlebot/nav2_params.yaml  # (if in sim)
+
+# Start cartographer
+ros2 launch turtlebot3_cartographer cartographer.launch.py  # use_sim_time:=True (if in sim)
+
+# Save a map from cartographer
+# Cartographer has to think the map is complete, which may take time
+ros2 run nav2_map_server map_saver_cli -f ~/path/to/map 
+
+# Teleoperation
+ros2 run turtlebot3_teleop teleop_keyboard
+
+# Open RViz
+ros2 run rviz2 rviz2
+# Open RViz with nav2 default topics
+ros2 run rviz2 rviz2 -d /opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz
+
+# Record a ROS 2 bag of all topics
+ros2 bag record -o <BAG_NAME> -a
+
+# Play a ROS 2 bag
+ros2 bag play <BAG_DIRECTORY>
+
+# Change parameters (temporarily) while robot is running
+ros2 param set <node> <param> <value>
+
+
+------------ ROS 2 Monitoring ---------------
+# See topics in a gui
+rqt
+
+# See a list of active topics
+ros2 topic list
+
+# View messages published to a topic
+ros2 topic echo /topic_name
+
+# Check activity of a topic
+ros2 topic monitor /topic_name
+
+# See a list of nodes
+ros2 node list
+
+# See a list of parameters
+ros2 param list <node>
+
+
+------------ Process Notes --------------
+# Record and playback robot behavior (using nav2 in Gazebo as an example)
+1. Bring up Gazebo (or turtlebot)
+2. Start Nav2
+2.5. Set 2D Pose Estimate
+3. Begin recording rosbag
+4. Perform robot behavior (set a nav goal and wait for robot to reach it)
+5. CTR+C to end rosbag recording
+6. Close RViz and Gazebo (or simply reset? maybe?)
+7. Open RViz with nav2 default topics
+8. Play rosbag
+
+# Edit a parameter temporarily while nav2 stack is running
+1. list nodes
+2. list parameters of node that has behavior you want to change
+3. set parameter using ros2 param set
