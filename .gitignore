@@ -1,7 +1,8 @@
 # Environment files
 .env
 .env.*
-!.env.example
+!.env.pc_example
+!.env.pi_example
 .venv
 env/
 venv/
