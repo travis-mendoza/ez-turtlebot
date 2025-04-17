@@ -31,11 +31,15 @@ Using your remote pc:
 * Connect the OpenCR board to the pc via USB to micro USB.
 * Install the Arduino IDE and add the OpenCR board to the boards manager following the [Robotis E-Manual](https://emanual.robotis.com/docs/en/parts/controller/opencr10/#install-on-linux).
 * Open the IDE's Library Manager and install the Dynamixel2Arduino library.
+* Install the Arduino CLI
+  * `curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/.local/bin sh`
+  * `arduino-cli config init`
+  * `arduino-cli core update-index`
+  * `arduino-cli core install OpenCR:OpenCR`
 * Clone the analog-enabled OpenCR repo fork
   * `git clone https://github.com/travis-mendoza/OpenCR.git`
-* Open [turtlebot3_burger.ino](https://github.com/travis-mendoza/OpenCR/blob/master/arduino/opencr_arduino/opencr/libraries/turtlebot3_ros2/examples/turtlebot3_burger/turtlebot3_burger.ino) in the Arduino IDE.
-* Select the OpenCR board and USB port from the board manager drop down menu.
-* Upload the file to the OpenCR board.
+* Upload the analog-enabled firmware
+  * `arduino-cli compile --upload -v -p /dev/ttyACM0 --fqbn OpenCR:OpenCR:OpenCR --libraries=$(pwd)/arduino/opencr_arduino/opencr/libraries arduino/opencr_arduino/opencr/libraries/turtlebot3_ros2/examples/turtlebot3_burger/turtlebot3_burger.ino`
 * Wait to hear the OpenCR melody, which indicates the upload was successful.
 * Disconnect the OpenCR from the remote PC.
 * Connect the OpenCR to the TurtleBot Raspberry Pi.
