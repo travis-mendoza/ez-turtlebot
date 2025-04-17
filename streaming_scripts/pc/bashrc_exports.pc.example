@@ -1,0 +1,5 @@
+# Configuration for remote pc of ez-turtlebot project
+# Copy these parameters to ~/.bashrc and modify as needed
+
+export AUDIO_UDP_PORT=5002
+export VIDEO_UDP_PORT=5000

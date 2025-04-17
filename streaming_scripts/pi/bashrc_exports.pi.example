@@ -1,0 +1,24 @@
+# Configuration for TurtleBot3 Raspberry Pi of ez-turtlebot project
+# Copy these parameters to ~/.bashrc and modify as needed
+
+# Remote PC parameters
+export REMOTE_PC_IP=192.168.1.100
+export VIDEO_UDP_PORT=5000
+export VIDEO_WIDTH=1920
+export VIDEO_HEIGHT=1080
+export VIDEO_FRAMERATE=30/1
+export VIDEO_BITRATE=4096
+export AUDIO_DEVICE=hw:3,0
+export AUDIO_UDP_PORT=5002
+
+# Paths to  GStreamer plugins
+export KVS_PRODUCER_BUILD_PATH=$HOME/Downloads/kvs-producer-sdk-cpp/build
+export LIBCAMERA_PLUGIN_PATH=/opt/libcamera/build/src/gstreamer
+# Configure GStreamer plugin path
+export GST_PLUGIN_PATH="${KVS_PRODUCER_BUILD_PATH}:${LIBCAMERA_PLUGIN_PATH}:${GST_PLUGIN_PATH}"
+
+# AWS credentials
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_REGION=us-east-1
+export KVS_STREAM_NAME="ez-turtlebot-live-stream"
