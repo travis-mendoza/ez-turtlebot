@@ -32,7 +32,10 @@ Using your remote pc:
 * Install the Arduino IDE and add the OpenCR board to the boards manager following the [Robotis E-Manual](https://emanual.robotis.com/docs/en/parts/controller/opencr10/#install-on-linux).
 * Open the IDE's Library Manager and install the Dynamixel2Arduino library.
 * Install the Arduino CLI
-  * `curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sh`
+  * Make sure $HOME/.local/bin is added to your $PATH in your bashrc file:
+    * `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
+    * `source ~/.bashrc`
+  * `curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$HOME/.local/bin sh`
   * `arduino-cli config init`
   * `arduino-cli core update-index`
   * `arduino-cli core install OpenCR:OpenCR`
