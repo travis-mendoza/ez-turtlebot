@@ -7,6 +7,11 @@
 #   3. In the remote pc, run the script:
 #      ./open_video_stream.sh
 
+# Load environment variables from .env if it exists
+if [ -f .env ]; then
+  source .env
+fi
+
 gst-launch-1.0 -v \
     udpsrc port=$VIDEO_UDP_PORT \
     ! "application/x-rtp,media=(string)video,clock-rate=(int)90000,encoding-name=(string)H264,payload=(int)96" \
