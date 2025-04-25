@@ -1,36 +1,53 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
- <tabbed_widget parent="main_window" name="Main Window">
-  <Tab tab_name="tab1" containers="1">
+ <tabbed_widget name="Main Window" parent="main_window">
+  <Tab tab_name="Sensors" containers="1">
    <Container>
-    <DockSplitter count="1" sizes="1" orientation="-">
-     <DockSplitter count="2" sizes="0.5;0.5" orientation="|">
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockSplitter count="2" orientation="|" sizes="0.5;0.5">
       <DockArea name="Chemicals">
-       <plot flip_y="false" flip_x="false" style="Lines" mode="TimeSeries">
-        <range top="4.392750" left="0.000000" bottom="2.597250" right="134.999367"/>
+       <plot mode="TimeSeries" flip_x="false" style="Lines" flip_y="false">
+        <range top="3.672000" left="0.281023" right="341.320010" bottom="2.328000"/>
         <limitY/>
         <curve name="/sensor_readings/Environmental Sensors/co (V)" color="#1f77b4"/>
         <curve name="/sensor_readings/Environmental Sensors/nh3 (V)" color="#d62728"/>
         <curve name="/sensor_readings/Environmental Sensors/no2 (V)" color="#1ac938"/>
        </plot>
       </DockArea>
-      <DockSplitter count="2" sizes="0.5;0.5" orientation="-">
-       <DockArea name="...">
-        <plot flip_y="false" flip_x="false" style="Lines" mode="TimeSeries">
-         <range top="73.963250" left="0.000000" bottom="73.406750" right="134.999367"/>
+      <DockSplitter count="2" orientation="-" sizes="0.5;0.5">
+       <DockArea name="Temperature">
+        <plot mode="TimeSeries" flip_x="false" style="Lines" flip_y="false">
+         <range top="71.790500" left="0.281023" right="341.320010" bottom="70.089500"/>
          <limitY/>
          <curve name="/sensor_readings/Environmental Sensors/temp (°C)" color="#f14cc1"/>
         </plot>
        </DockArea>
-       <DockArea name="...">
-        <plot flip_y="false" flip_x="false" style="Lines" mode="TimeSeries">
-         <range top="63.351500" left="0.000000" bottom="60.768500" right="134.999367"/>
+       <DockArea name="Relative Humidity">
+        <plot mode="TimeSeries" flip_x="false" style="Lines" flip_y="false">
+         <range top="57.672250" left="0.281023" right="341.320010" bottom="54.217750"/>
          <limitY/>
          <curve name="/sensor_readings/Environmental Sensors/rh (%)" color="#ff7f0e"/>
         </plot>
        </DockArea>
       </DockSplitter>
      </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab tab_name="RawData" containers="1">
+   <Container>
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockArea name="...">
+      <plot mode="TimeSeries" flip_x="false" style="Lines" flip_y="false">
+       <range top="755.775000" left="0.000000" right="341.430203" bottom="471.225000"/>
+       <limitY/>
+       <curve name="/analog_pins/data[0]" color="#1f77b4"/>
+       <curve name="/analog_pins/data[1]" color="#d62728"/>
+       <curve name="/analog_pins/data[2]" color="#1ac938"/>
+       <curve name="/analog_pins/data[3]" color="#ff7f0e"/>
+       <curve name="/analog_pins/data[4]" color="#f14cc1"/>
+      </plot>
+     </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
@@ -41,7 +58,7 @@
  <!-- - - - - - - - - - - - - - - -->
  <Plugins>
   <plugin ID="DataLoad CSV">
-   <parameters time_axis="" delimiter="0"/>
+   <parameters delimiter="0" time_axis=""/>
   </plugin>
   <plugin ID="DataLoad MCAP"/>
   <plugin ID="DataLoad ROS2 bags">
@@ -59,7 +76,7 @@
    <max_array_size value="100"/>
    <boolean_strings_to_number value="true"/>
    <remove_suffix_from_strings value="true"/>
-   <selected_topics value="/sensor_readings"/>
+   <selected_topics value="/analog_pins;/mean_analog;/sensor_readings"/>
   </plugin>
   <plugin ID="UDP Server"/>
   <plugin ID="WebSocket Server"/>
