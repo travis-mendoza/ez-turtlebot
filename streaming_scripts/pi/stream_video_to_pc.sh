@@ -20,7 +20,7 @@ VIDEO_BITRATE="${VIDEO_BITRATE:-4096}"
 VIDEO_UDP_PORT="${VIDEO_UDP_PORT:-5000}"
 
 echo "GST_PLUGIN_PATH=${GST_PLUGIN_PATH}"
-echo "Streaming video to ${REMOTE_PC_IP}:${UDP_PORT}"
+echo "Streaming video to ${REMOTE_PC_IP}:${VIDEO_UDP_PORT}"
 echo "Starting GStreamer pipeline..."
 
 # GStreamer pipeline to capture from webcam, encode, and send over UDP
