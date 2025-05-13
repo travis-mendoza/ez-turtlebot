@@ -33,6 +33,9 @@ sudo apt-get install openjdk-21-jre-headless -y
 echo "Installing AWS CLI..."
 sudo apt-get install awscli -y
 
+
+# REQUIRE VIRTUAL ENVIRONMENT?
+
 # Install AWS IoT Device SDK for Python using pip
 echo "Installing AWS IoT Device SDK for Python..."
 pip3 install awsiotsdk
@@ -50,3 +53,7 @@ echo "Installing unzip..."
 sudo apt install unzip
 
 echo "Installation complete!"
+
+
+# NO INSTALLATION CANDIDATE ON RASPBERRY PI OS
+sudo apt-get install openjdk-21-jre-headless -y
