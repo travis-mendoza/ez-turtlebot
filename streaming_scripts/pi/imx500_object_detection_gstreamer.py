@@ -200,12 +200,12 @@ if __name__ == "__main__":
     # Set up H.264 encoder
     encoder = H264Encoder(bitrate=args.bitrate)
     
-    # Create GStreamer pipeline for streaming
-    gst_pipeline = f"appsrc ! videoconvert ! video/x-raw,format=I420 ! x264enc speed-preset=ultrafast tune=zerolatency ! h264parse ! rtph264pay config-interval=1 ! udpsink host={args.ip} port={args.port}"
-    output = FfmpegOutput(gst_pipeline)
-    
-    # Start encoder with the GStreamer output
+    # Set up output to stream over UDP
+    output = FfmpegOutput(f"-f h264 -y -an -r {args.fps} -c:v copy -f rtp rtp://{args.ip}:{args.port}")
+
+    # Start encoder with the output
     encoder.output = output
+    
     picam2.start_encoder(encoder)
 
     print(f"Streaming to {args.ip}:{args.port}")
