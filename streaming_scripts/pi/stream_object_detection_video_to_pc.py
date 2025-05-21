@@ -1,16 +1,16 @@
 """
-imx500_object_detection_gstreamer.py - Object detection demo for IMX500 AI Camera with FFmpeg RTP streaming
+stream_object_detection_video_to_pc.py - Object detection demo for IMX500 AI Camera with FFmpeg RTP streaming
 
-This script demonstrates how to use the IMX500 AI Camera for object detection
-and stream the output with detection overlays to a remote PC using FFmpeg for RTP.
+This script uses the IMX500 AI Camera for object detection
+and streams the output to a remote PC using FFmpeg for RTP.
 
 Usage:
-    python imx500_object_detection_gstreamer.py --model /path/to/model.rpk --ip 192.168.1.100 --port 5000
+    python stream_object_detection_video_to_pc.py --model /path/to/model.rpk --ip 192.168.1.100 --port 5000
 """
 import argparse
 import sys
 from functools import lru_cache
-from typing import List, Optional # Added for type hinting
+from typing import List, Optional
 
 import cv2
 import numpy as np
