@@ -5,10 +5,12 @@ This script uses the IMX500 AI Camera for object detection
 and streams the output to a remote PC using FFmpeg for RTP.
 
 Usage:
-    python stream_object_detection_video_to_pc.py --model /path/to/model.rpk --ip 192.168.1.100 --port 5000
+    python stream_object_detection_video_to_pc.py --model /path/to/model.rpk [--ip 192.168.1.100] [--port 5000]
+    Uses environment variables for IP, port, width, height, FPS, bitrate if not specified.
 """
 import argparse
 import sys
+import os
 from functools import lru_cache
 from typing import List, Optional
 
@@ -142,10 +144,26 @@ def draw_detections(request, stream="main"):
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="IMX500 Object Detection with FFmpeg RTP Streaming") # Added description
+    parser = argparse.ArgumentParser(description="IMX500 Object Detection with FFmpeg RTP Streaming")
     parser.add_argument("--model", type=str, help="Path of the model",
                         default=DEFAULT_MODEL_PATH)
-    parser.add_argument("--fps", type=int, help="Frames per second", default=30)
+    
+    # --- FPS ---
+    script_default_fps = 30
+    env_fps_str = os.environ.get('VIDEO_FRAMERATE')
+    default_fps = script_default_fps
+    if env_fps_str:
+        try:
+            if '/' in env_fps_str: # Handles "30/1" format
+                default_fps = int(env_fps_str.split('/')[0])
+            else:
+                default_fps = int(env_fps_str)
+        except ValueError:
+            print(f"Warning: Invalid VIDEO_FRAMERATE '{env_fps_str}' in environment. Using default {script_default_fps}.", file=sys.stderr)
+    parser.add_argument("--fps", type=int, default=default_fps, 
+                        help=f"Frames per second (env: VIDEO_FRAMERATE, script default: {script_default_fps})")
+
+    # --- Object Detection ---
     parser.add_argument("--bbox-normalization", action=argparse.BooleanOptionalAction, help="Normalize bbox")
     parser.add_argument("--bbox-order", choices=["yx", "xy"], default="yx",
                         help="Set bbox order yx -> (y0, x0, y1, x1) xy -> (x0, y0, x1, y1)")
@@ -161,12 +179,61 @@ def get_args():
                         help=f"Path to the labels file (default: {DEFAULT_COCO_LABELS_PATH} if not overridden by model intrinsics)")
     parser.add_argument("--print-intrinsics", action="store_true",
                         help="Print JSON network_intrinsics then exit")
-    # FFmpeg streaming options
-    parser.add_argument("--ip", type=str, default="127.0.0.1", help="IP address to stream to")
-    parser.add_argument("--port", type=int, default=5000, help="Port to stream to")
-    parser.add_argument("--bitrate", type=int, default=2000000, help="Bitrate for H.264 encoding")
-    parser.add_argument("--width", type=int, default=640, help="Stream width")
-    parser.add_argument("--height", type=int, default=480, help="Stream height")
+
+    # --- IP Address ---
+    script_default_ip = "127.0.0.1"
+    default_ip = os.environ.get('REMOTE_PC_IP') or script_default_ip
+    parser.add_argument("--ip", type=str, default=default_ip, 
+                        help=f"IP address to stream to (env: REMOTE_PC_IP, script default: {script_default_ip})")
+
+    # --- Port ---
+    script_default_port = 5000
+    env_port_str = os.environ.get('VIDEO_UDP_PORT')
+    default_port = script_default_port
+    if env_port_str:
+        try:
+            default_port = int(env_port_str)
+        except ValueError:
+            print(f"Warning: Invalid VIDEO_UDP_PORT '{env_port_str}' in environment. Using default {script_default_port}.", file=sys.stderr)
+    parser.add_argument("--port", type=int, default=default_port, 
+                        help=f"Port to stream to (env: VIDEO_UDP_PORT, script default: {script_default_port})")
+
+    # --- Bitrate ---
+    script_default_bitrate_bps = 2000000 # 2 Mbps
+    env_bitrate_kbps_str = os.environ.get('VIDEO_BITRATE')
+    default_bitrate_bps = script_default_bitrate_bps
+    if env_bitrate_kbps_str:
+        try:
+            default_bitrate_bps = int(env_bitrate_kbps_str) * 1000 # Convert Kbps from env to bps
+        except ValueError:
+            print(f"Warning: Invalid VIDEO_BITRATE '{env_bitrate_kbps_str}' in environment. Using default {script_default_bitrate_bps} bps.", file=sys.stderr)
+    parser.add_argument("--bitrate", type=int, default=default_bitrate_bps, 
+                        help=f"Bitrate for H.264 encoding in bps (env: VIDEO_BITRATE in Kbps, script default: {script_default_bitrate_bps})")
+
+    # --- Width ---
+    script_default_width = 640
+    env_width_str = os.environ.get('VIDEO_WIDTH')
+    default_width = script_default_width
+    if env_width_str:
+        try:
+            default_width = int(env_width_str)
+        except ValueError:
+            print(f"Warning: Invalid VIDEO_WIDTH '{env_width_str}' in environment. Using default {script_default_width}.", file=sys.stderr)
+    parser.add_argument("--width", type=int, default=default_width, 
+                        help=f"Stream width (env: VIDEO_WIDTH, script default: {script_default_width})")
+
+    # --- Height ---
+    script_default_height = 480
+    env_height_str = os.environ.get('VIDEO_HEIGHT')
+    default_height = script_default_height
+    if env_height_str:
+        try:
+            default_height = int(env_height_str)
+        except ValueError:
+            print(f"Warning: Invalid VIDEO_HEIGHT '{env_height_str}' in environment. Using default {script_default_height}.", file=sys.stderr)
+    parser.add_argument("--height", type=int, default=default_height, 
+                        help=f"Stream height (env: VIDEO_HEIGHT, script default: {script_default_height})")
+    
     parser.add_argument("--local-display", action="store_true", help="Show video locally as well")
     return parser.parse_args()
 
@@ -243,7 +310,7 @@ if __name__ == "__main__":
         print(f"Streaming to {args.ip}:{args.port} at {args.width}x{args.height}, {args.fps}fps, {args.bitrate/1000000:.1f}Mbps")
         print("To view the stream on the receiving end, run:")
         print(f"gst-launch-1.0 udpsrc port={args.port} caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264\" ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! autovideosink")
-        print("Alternatively, with ffplay: ffplay rtp://{args.ip}:{args.port}")
+        print(f"Alternatively, with ffplay: ffplay rtp://{args.ip}:{args.port}") # Corrected ffplay command
 
 
         picam2.pre_callback = draw_detections
