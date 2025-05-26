@@ -2,27 +2,29 @@
 This TurtleBot3 project achieves the following:
 * Optimized autonomous navigation and obstacle avoidance
 * Publishes a ROS 2 topic of measurements from analog pins A0-A5 from the TurtleBot OpenCR microcontroller board
-* Streams audio and video to a remote pc or to AWS
-* TODO: streams analog pin data to AWS
+* Streams analog data, audio and video to a remote pc or to a cloud service (currently AWS or YouTube)
 
 # Contents
 * Streaming Scripts
-  * Scripts to start microphone and video streams on the Raspberry Pi
+  * Scripts to start analog, microphone and video streams on the Raspberry Pi
   * Scripts to open the microphone and video streams on the remote PC
-  * TODO: a dedicated README for setting up the Pi camera, installing dependencies, storing secret keys as environment variables
+  * TODO: a dedicated README for setting up the Pi camera v2 on Ubuntu 22, installing dependencies, storing secret keys as environment variables
 * commands_and_tips: Commands, tips, and notes to copy-paste or reference frequently
+* Humble_install_steps: The steps I took to install ROS 2 Humble to Raspberry Pi OS x64
 * nav2_params: The Nav2 parameters file for optimized navigation in tight labs and office spaces. The file invokes the MPPI controller and the Smac Hybrid A* Planner.
 
 # Context
 The following is a list of hardware and software used in developing this project.
 ## Hardware
-* TurtleBot3 Burger
-* Raspberry Pi 4b (8GB)
-* Raspberry Pi Camera Module v2
+* [TurtleBot3 Burger](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/#overview)
+* [Raspberry Pi 4b (8GB)](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/specifications/)
+* [Raspberry Pi Camera Module v2](https://www.raspberrypi.com/products/camera-module-v2/) and [Raspberry Pi AI Camera](https://www.raspberrypi.com/products/ai-camera/)
 ## Software
-* Ubuntu 22 LTS
-* ROS 2 Humble
-* Nav2
+* OS options:
+  * For Camera Module v2 and easy, reliable ROS 2 installation, use [Ubuntu 22 LTS](https://releases.ubuntu.com/jammy/)
+  * For AI Camera use [Raspberry Pi OS x64](https://www.raspberrypi.com/software/)
+* [ROS 2 Humble](https://docs.ros.org/en/humble/index.html)
+* [Nav2](https://docs.nav2.org/index.html)
 
 # Set up Instructions
 ## Broadcast raw values from OpenCR analog pins to a ros2 topic
@@ -42,6 +44,7 @@ Using your remote pc:
 5. Clone the analog-enabled OpenCR repo fork
   * `git clone https://github.com/travis-mendoza/OpenCR.git`
 6. Upload the analog-enabled firmware
+  * `cd /path/to/OpenCR`
   * `arduino-cli compile --upload -v -p /dev/ttyACM0 --fqbn OpenCR:OpenCR:OpenCR --libraries=$(pwd)/arduino/opencr_arduino/opencr/libraries arduino/opencr_arduino/opencr/libraries/turtlebot3_ros2/examples/turtlebot3_burger/turtlebot3_burger.ino`
 7. Wait to hear the OpenCR melody, which indicates the upload was successful.
 8. Disconnect the OpenCR from the remote PC.
