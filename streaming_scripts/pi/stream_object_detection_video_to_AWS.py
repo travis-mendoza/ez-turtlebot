@@ -40,12 +40,12 @@ last_results: Optional[List['Detection']] = None
 picam2: Optional[Picamera2] = None
 imx500: Optional[IMX500] = None
 intrinsics: Optional[NetworkIntrinsics] = None
-args_global: Optional[argparse.Namespace] = None # Renamed to avoid conflict with 'args' in function scopes
+args_global: Optional[argparse.Namespace] = None
 
-gst_pipeline_obj = None # Renamed to avoid conflict with 'gst_pipeline' string
-appsrc_obj = None       # Renamed
-glib_loop = None        # Renamed
-gst_pipeline_active = True # Flag to control the main processing loop
+gst_pipeline_obj = None
+appsrc_obj = None
+glib_loop = None
+gst_pipeline_active = True
 
 class Detection:
     def __init__(self, coords, category, conf, metadata):
@@ -121,12 +121,11 @@ def draw_detections_on_array(array: np.ndarray, detections_to_draw: Optional[Lis
         text_x = x + 5
         text_y = y + 15
         cv2.rectangle(array, (text_x, text_y - text_height - baseline // 2), (text_x + text_width, text_y + baseline // 2), (255, 255, 255), cv2.FILLED)
-        cv2.putText(array, label_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+        cv2.putText(array, label_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1) # Red text on RGB
         cv2.rectangle(array, (x, y), (x + w, y + h), (0, 255, 0, 0), thickness=2)
-    # ROI drawing omitted for brevity, can be added back if needed
     return array
 
-def get_args_aws_local(): # Renamed to avoid conflict if you have another get_args
+def get_args_aws_local():
     global args_global
     parser = argparse.ArgumentParser(description="IMX500 Object Detection to AWS KVS")
     parser.add_argument("--model", type=str, help="Path of the model", default=DEFAULT_MODEL_PATH)
@@ -147,8 +146,6 @@ def get_args_aws_local(): # Renamed to avoid conflict if you have another get_ar
     parser.add_argument("-r", "--preserve-aspect-ratio", action=argparse.BooleanOptionalAction)
     parser.add_argument("--labels", type=str, help=f"Path to labels file (default: {DEFAULT_COCO_LABELS_PATH})")
     parser.add_argument("--print-intrinsics", action="store_true")
-
-    # AWS KVS Specific Arguments
     default_kvs_stream_name = os.environ.get('KVS_STREAM_NAME')
     parser.add_argument("--kvs-stream-name", type=str, default=default_kvs_stream_name, required=default_kvs_stream_name is None, help="AWS Kinesis Video Stream name (env: KVS_STREAM_NAME)")
     parser.add_argument("--aws-region", type=str, default=os.environ.get('AWS_REGION'), help="AWS Region for KVS (env: AWS_REGION)")
@@ -174,7 +171,7 @@ def get_args_aws_local(): # Renamed to avoid conflict if you have another get_ar
         except ValueError: print(f"Warning: Invalid VIDEO_HEIGHT. Using default {script_default_height}.", file=sys.stderr)
     parser.add_argument("--height", type=int, default=default_height, help=f"Stream height (env: VIDEO_HEIGHT, default: {script_default_height})")
     parser.add_argument("--local-display", action="store_true", help="Show video locally as well")
-    args_global = parser.parse_args() # Assign to global args_global
+    args_global = parser.parse_args()
     return args_global
 
 def on_bus_message(bus, message, loop_param):
@@ -183,7 +180,7 @@ def on_bus_message(bus, message, loop_param):
     if mtype == Gst.MessageType.EOS:
         print("GStreamer: End-of-stream received on bus.")
         gst_pipeline_active = False
-        if loop_param and loop_param.is_running(): # Check if it was ever run
+        if loop_param and loop_param.is_running():
              loop_param.quit()
     elif mtype == Gst.MessageType.ERROR:
         err, debug = message.parse_error()
@@ -194,15 +191,14 @@ def on_bus_message(bus, message, loop_param):
     elif mtype == Gst.MessageType.WARNING:
         err, debug = message.parse_warning()
         print(f"GStreamer Warning: {err}, {debug}")
-    return True # Important for signal handlers to allow propagation
+    return True
 
 def main():
     global picam2, imx500, intrinsics, args_global
-    global gst_pipeline_obj, appsrc_obj, glib_loop, gst_pipeline_active
+    global gst_pipeline_obj, appsrc_obj, glib_loop, gst_pipeline_active, last_results
 
     Gst.init(None)
-    args_val = get_args_aws_local() # Call the renamed get_args
-    # args_global is already set by get_args_aws_local
+    args_val = get_args_aws_local()
 
     imx500 = IMX500(args_val.model)
     intrinsics = imx500.network_intrinsics
@@ -231,12 +227,13 @@ def main():
 
     picam2 = Picamera2(imx500.camera_num)
     video_config = picam2.create_video_configuration(
-        main={"size": (args_val.width, args_val.height), "format": "RGB888"},
+        main={"size": (args_val.width, args_val.height), "format": "RGB888"}, # Output RGB
         controls={"FrameRate": float(args_val.fps)}, buffer_count=10)
     picam2.configure(video_config)
     
+    # CHANGE 1: appsrc caps format to BGR
     gst_pipeline_str = (
-        f"appsrc name=pysrc format=GST_FORMAT_TIME is-live=true do-timestamp=true caps=video/x-raw,format=RGB,width={args_val.width},height={args_val.height},framerate={args_val.fps}/1 ! "
+        f"appsrc name=pysrc format=GST_FORMAT_TIME is-live=true do-timestamp=true caps=video/x-raw,format=BGR,width={args_val.width},height={args_val.height},framerate={args_val.fps}/1 ! "
         f"videoconvert ! video/x-raw,format=I420 ! "
         f"x264enc bitrate={args_val.bitrate} bframes=0 key-int-max={int(args_val.fps)} tune=zerolatency speed-preset=ultrafast byte-stream=true ! "
         f"video/x-h264,profile=baseline,stream-format=avc,alignment=au ! "
@@ -251,7 +248,6 @@ def main():
 
     appsrc_obj = gst_pipeline_obj.get_by_name('pysrc')
     if not appsrc_obj: print("Error: Could not find appsrc 'pysrc'.", file=sys.stderr); sys.exit(1)
-    # appsrc_obj.set_property('emit-signals', True) # Not strictly needed for push-buffer
 
     imx500.show_network_fw_progress_bar()
     picam2.start()
@@ -261,14 +257,14 @@ def main():
     glib_loop = GLib.MainLoop()
     bus = gst_pipeline_obj.get_bus()
     bus.add_signal_watch()
-    bus.connect("message", on_bus_message, glib_loop) # Pass the GLib.MainLoop object
+    bus.connect("message", on_bus_message, glib_loop)
 
     gst_pipeline_obj.set_state(Gst.State.PLAYING)
     print("GStreamer pipeline playing.")
 
     pts = 0
     duration = 10**9 / args_val.fps
-    gst_pipeline_active = True # Ensure it's true before starting loop
+    gst_pipeline_active = True
 
     try:
         while gst_pipeline_active:
@@ -276,46 +272,49 @@ def main():
             try:
                 metadata = request.get_metadata()
                 if metadata: last_results = parse_detections(metadata)
-                frame_array = request.make_array('main')
-                frame_with_overlays = draw_detections_on_array(frame_array, last_results, request)
+                
+                frame_array_rgb = request.make_array('main') # This is RGB
+                frame_with_overlays_rgb = draw_detections_on_array(frame_array_rgb, last_results, request)
+
+                # CHANGE 2: Convert RGB to BGR before pushing
+                frame_with_overlays_bgr = cv2.cvtColor(frame_with_overlays_rgb, cv2.COLOR_RGB2BGR)
 
                 if args_val.local_display:
-                    cv2.imshow("Local Preview", frame_with_overlays)
+                    # For local display, you might want to show the BGR image or convert it back to RGB
+                    # depending on what cv2.imshow expects on your system, but usually BGR is fine.
+                    cv2.imshow("Local Preview", frame_with_overlays_bgr)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         gst_pipeline_active = False; break 
-
-                gst_buffer = Gst.Buffer.new_wrapped(frame_with_overlays.tobytes())
+                
+                # CHANGE 3: Push the BGR frame bytes
+                gst_buffer = Gst.Buffer.new_wrapped(frame_with_overlays_bgr.tobytes())
                 gst_buffer.pts = pts
                 gst_buffer.duration = duration
                 pts += duration
                 retval = appsrc_obj.push_buffer(gst_buffer)
                 if retval != Gst.FlowReturn.OK:
                     print(f"Error pushing buffer to appsrc: {retval}", file=sys.stderr)
-                    gst_pipeline_active = False # Stop on push error
+                    gst_pipeline_active = False
             finally:
                 request.release()
 
-            # Process GStreamer bus messages non-blockingly
-            # This allows on_bus_message to set gst_pipeline_active = False if EOS/Error
             while GLib.MainContext.default().pending():
                 GLib.MainContext.default().iteration(False)
             
-            # time.sleep(0.001) # Optional: if CPU is too high and capture_request isn't blocking enough
-
     except KeyboardInterrupt:
         print("\nStopping stream due to KeyboardInterrupt...")
-        gst_pipeline_active = False # Ensure loop terminates
+        gst_pipeline_active = False
     except Exception as e:
         print(f"\nAn unexpected error occurred: {e}", file=sys.stderr)
         import traceback; traceback.print_exc()
-        gst_pipeline_active = False # Ensure loop terminates on other errors
+        gst_pipeline_active = False
     finally:
         print("Cleaning up resources...")
         if args_val.local_display: cv2.destroyAllWindows()
         if gst_pipeline_obj:
             print("Setting GStreamer pipeline to NULL...")
             gst_pipeline_obj.set_state(Gst.State.NULL)
-        if glib_loop and glib_loop.is_running(): # If it was ever started by loop.run() (not in this script)
+        if glib_loop and glib_loop.is_running():
             glib_loop.quit()
         if picam2 and picam2.started:
             print("Stopping Picamera2...")
