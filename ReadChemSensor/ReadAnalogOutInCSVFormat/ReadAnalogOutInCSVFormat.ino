@@ -1,13 +1,8 @@
 /*
-  AnalogReadSerial
+  ReadAnalogOutInCSVFormat
 
-  Reads an analog input on pin 0, prints the result to the Serial Monitor.
+  Reads analog inputs on pins A0-A5, prints the results to the Serial Monitor in CSV format.
   Graphical representation is available using Serial Plotter (Tools > Serial Plotter menu).
-  Attach the center pin of a potentiometer to pin A0, and the outside pins to +5V and ground.
-
-  This example code is in the public domain.
-
-  https://docs.arduino.cc/built-in-examples/basics/AnalogReadSerial/
 */
 
 
@@ -16,7 +11,12 @@ const int numPins = 6;  // A0-A5 = 6 pins
 // the setup routine runs once when you press reset:
 void setup() {
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(115200);  // OpenCR  // Serial.begin(9600);  // Arduino
+
+  // // Set all pins to pulldown
+  // for (int pin = 0; pin < numPins; pin++) {
+  //   pinMode(A0 + pin, INPUT);
+  // }
   
   // Print header labels for Serial Plotter (optional, helps with identification)
   // This will be the header row for your CSV
