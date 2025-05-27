@@ -66,7 +66,22 @@ Using the TurtleBot Raspberry Pi:
   * `ros2 topic echo /analog_pins`
 
 
-## Stream analog sensor data to AWS
+## Stream TurtleBot3 data
+The following sections make use of the scripts in streaming_scripts/
+
+This is the time to clone this repo if you haven't already :)
+
+### Stream analog sensor data to remote PC
+On the pi:
+1. If the turtlebot3 backbone isn't already active, start it:
+  * `ros2 launch turtlebot3_bringup robot.launch.py`
+
+On the PC:
+1. use whichever tool you prefer to view the /analog_pins topic messages. I prefer plotjuggler:
+  * ros2 run plotjuggler plotjuggler
+
+
+### Stream analog sensor data to AWS
 Using the TurtleBot Raspberry Pi:
 1. Change permissions to the com folder
 2. Copy the read_processed_analog.py from the repo into the greengrass chemical folder as read_sensor_data.py
@@ -75,5 +90,19 @@ Using the TurtleBot Raspberry Pi:
 5. Run sensor_data_publisher.py
 
 
-## Stream audio and video to a remote PC or AWS
-* TODO
+### Stream audio to remote PC
+On the pi: 
+1. Copy the export statements from bashrc_exports.pi.example to your ~/.bashrc and then `source ~/.bashrc`
+2. 
+
+### Stream video to remote PC
+
+
+### Stream video to AWS Kinesis
+
+
+### Stream video with object detection overlays to remote PC
+
+
+### Stream video with object detection overlays to YouTube Live
+_Coming soon_
