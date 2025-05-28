@@ -178,6 +178,7 @@ def start_ffmpeg_stream(args_val):
         '-maxrate', f'{args_val.bitrate}k',
         '-bufsize', f'{args_val.bitrate}k',
         '-g', str(args_val.fps),  # Keyframe interval = fps
+        '-pix_fmt', 'yuv420p',
         '-f', 'flv',
         f'rtmp://a.rtmp.youtube.com/live2/{args_val.stream_key}'
     ]
