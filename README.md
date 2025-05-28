@@ -78,7 +78,7 @@ On the pi:
 
 On the PC:
 1. use whichever tool you prefer to view the /analog_pins topic messages. I prefer plotjuggler:
-  * ros2 run plotjuggler plotjuggler
+  * `ros2 run plotjuggler plotjuggler`
 
 
 ### Stream analog sensor data to AWS
@@ -93,7 +93,7 @@ Using the TurtleBot Raspberry Pi:
 ### Stream audio to remote PC
 On the pi: 
 1. Copy the export statements from bashrc_exports.pi.example to your ~/.bashrc and then `source ~/.bashrc`
-2. 
+2. `cd /path/to/ez-turtlebot/streaming_scripts/
 
 ### Stream video to remote PC
 
