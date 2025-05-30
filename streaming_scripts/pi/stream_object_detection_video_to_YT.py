@@ -137,21 +137,21 @@ def get_args_yt_local():
     parser.add_argument("--print-intrinsics", action="store_true")
     default_stream_key = os.environ.get('YT_STREAM_KEY')
     parser.add_argument("--stream-key", type=str, default=default_stream_key, required=default_stream_key is None, help="YouTube Live stream key (env: YT_STREAM_KEY)")
-    script_default_bitrate_kbps = 1000  # Lower bitrate for lower latency
+    script_default_bitrate_kbps = 2500  # YouTube recommended bitrate (in Kbps)
     env_bitrate_kbps_str = os.environ.get('VIDEO_BITRATE')
     default_bitrate_kbps = script_default_bitrate_kbps
     if env_bitrate_kbps_str:
         try: default_bitrate_kbps = int(env_bitrate_kbps_str)
         except ValueError: print(f"Warning: Invalid VIDEO_BITRATE. Using default {default_bitrate_kbps} Kbps.", file=sys.stderr)
     parser.add_argument("--bitrate", type=int, default=default_bitrate_kbps, help=f"Target bitrate for H.264 encoding in Kbps (env: VIDEO_BITRATE, default: {default_bitrate_kbps} Kbps)")
-    script_default_width = 640  # Lower resolution for lower latency
+    script_default_width = 1280  # YouTube recommended minimum for 720p
     env_width_str = os.environ.get('VIDEO_WIDTH')
     default_width = script_default_width
     if env_width_str:
         try: default_width = int(env_width_str)
         except ValueError: print(f"Warning: Invalid VIDEO_WIDTH. Using default {script_default_width}.", file=sys.stderr)
     parser.add_argument("--width", type=int, default=default_width, help=f"Stream width (env: VIDEO_WIDTH, default: {script_default_width})")
-    script_default_height = 480  # Lower resolution for lower latency
+    script_default_height = 720  # YouTube recommended minimum for 720p
     env_height_str = os.environ.get('VIDEO_HEIGHT')
     default_height = script_default_height
     if env_height_str:
@@ -163,26 +163,32 @@ def get_args_yt_local():
     return args_global
 
 def start_ffmpeg_stream(args_val):
-    """Start ffmpeg process for streaming to YouTube"""
+    """Start ffmpeg process for streaming to YouTube with silent audio and proper timestamps"""
     ffmpeg_cmd = [
         'ffmpeg',
+        '-fflags', '+genpts',  # Generate presentation timestamps
         '-f', 'rawvideo',
         '-pix_fmt', 'rgb24',
         '-s', f'{args_val.width}x{args_val.height}',
         '-r', str(args_val.fps),
-        '-i', '-',  # Read from stdin
+        '-i', '-',  # Read video from stdin
+        '-f', 'lavfi',
+        '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',  # Silent audio
         '-c:v', 'libx264',
-        '-preset', 'ultrafast',  # Fastest encoding
-        '-tune', 'zerolatency',  # Minimize latency
+        '-preset', 'veryfast',
+        '-tune', 'zerolatency',
         '-b:v', f'{args_val.bitrate}k',
         '-maxrate', f'{args_val.bitrate}k',
-        '-bufsize', f'{args_val.bitrate}k',
-        '-g', str(args_val.fps),  # Keyframe interval = fps
+        '-bufsize', f'{2*args_val.bitrate}k',
+        '-g', str(args_val.fps * 2),  # Keyframe interval (2 seconds)
         '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-ar', '44100',
+        '-shortest',  # End stream when video ends
         '-f', 'flv',
         f'rtmp://a.rtmp.youtube.com/live2/{args_val.stream_key}'
     ]
-    
     return subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
 
 def main():

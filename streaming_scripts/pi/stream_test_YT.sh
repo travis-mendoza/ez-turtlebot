@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Path to a test video file (must exist)
+# Path to a test video file
 VIDEO_FILE="./nav2.mp4"
 
 # YouTube RTMP URL
-YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/YT_STREAM_KEY"
+YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/$YT_STREAM_KEY"
 
 # ffmpeg command: re-encode and stream to YouTube
 ffmpeg -re -stream_loop -1 -i "$VIDEO_FILE" \
