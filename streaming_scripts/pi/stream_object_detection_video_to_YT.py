@@ -245,9 +245,8 @@ def main():
                 metadata = request.get_metadata()
                 if metadata: last_results = parse_detections(metadata)
                 
-                frame_array_rgb = request.make_array('main') # This is RGB
-                frame_bgr = cv2.cvtColor(frame_array_rgb, cv2.COLOR_RGB2BGR)
-                frame_with_overlays_bgr = draw_detections_on_array(frame_bgr, last_results, request)
+                frame_array_bgr = request.make_array('main') 
+                frame_with_overlays_bgr = draw_detections_on_array(frame_array_bgr, last_results, request)
 
                 if args_val.local_display:
                     cv2.imshow("Local Preview", frame_with_overlays_bgr)
