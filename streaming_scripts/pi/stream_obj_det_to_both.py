@@ -269,7 +269,7 @@ def main():
                 metadata = request.get_metadata()
                 if metadata: last_results = parse_detections(metadata)
                 
-                frame_array_bgr = cv2.cvtColor(request.make_array('main'), cv2.COLOR_RGB2BGR)
+                frame_array_bgr = request.make_array('main') 
                 frame_with_overlays_bgr = draw_detections_on_array(frame_array_bgr, last_results, request)
 
                 if args_val.local_display:
