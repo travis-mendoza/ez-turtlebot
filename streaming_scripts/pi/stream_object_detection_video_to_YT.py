@@ -163,12 +163,12 @@ def get_args_yt_local():
     return args_global
 
 def start_ffmpeg_stream(args_val):
-    """Start ffmpeg process for streaming to YouTube with silent audio and proper timestamps"""
+    """Start ffmpeg process for streaming to YouTube with silent audio and proper timestamps, using BGR format throughout."""
     ffmpeg_cmd = [
         'ffmpeg',
         '-fflags', '+genpts',  # Generate presentation timestamps
         '-f', 'rawvideo',
-        '-pix_fmt', 'rgb24',
+        '-pix_fmt', 'bgr24',  # Use BGR format throughout
         '-s', f'{args_val.width}x{args_val.height}',
         '-r', str(args_val.fps),
         '-i', '-',  # Read video from stdin
@@ -246,18 +246,17 @@ def main():
                 if metadata: last_results = parse_detections(metadata)
                 
                 frame_array_rgb = request.make_array('main') # This is RGB
-                frame_with_overlays_rgb = draw_detections_on_array(frame_array_rgb, last_results, request)
+                frame_bgr = cv2.cvtColor(frame_array_rgb, cv2.COLOR_RGB2BGR)
+                frame_with_overlays_bgr = draw_detections_on_array(frame_bgr, last_results, request)
 
                 if args_val.local_display:
-                    # For local display, convert RGB to BGR for OpenCV
-                    frame_with_overlays_bgr = cv2.cvtColor(frame_with_overlays_rgb, cv2.COLOR_RGB2BGR)
                     cv2.imshow("Local Preview", frame_with_overlays_bgr)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
                 
-                # Write frame to ffmpeg process
+                # Write BGR frame directly to ffmpeg process
                 try:
-                    ffmpeg_process.stdin.write(frame_with_overlays_rgb.tobytes())
+                    ffmpeg_process.stdin.write(frame_with_overlays_bgr.tobytes())
                 except IOError as e:
                     print(f"Error writing to ffmpeg: {e}", file=sys.stderr)
                     break
